@@ -1,0 +1,32 @@
+{
+	"name": "@cfware/tap-context-got",
+	"version": "0.1.0",
+	"description": "TAP context for performing integration testing with `got`",
+	"type": "module",
+	"main": "index.js",
+	"exports": "./index.js",
+	"scripts": {
+		"test": "cfware-lint ."
+	},
+	"engines": {
+		"node": ">=14.0.0"
+	},
+	"author": "Corey Farrell",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/cfware/tap-context-got.git"
+	},
+	"bugs": {
+		"url": "https://github.com/cfware/tap-context-got/issues"
+	},
+	"homepage": "https://github.com/cfware/tap-context-got#readme",
+	"dependencies": {
+		"got": "^10.7.0",
+		"multi-part": "^3.0.0",
+		"tough-cookie": "^3.0.0"
+	},
+	"devDependencies": {
+		"@cfware/lint": "^2.0.2"
+	}
+}
