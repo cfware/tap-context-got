@@ -1,6 +1,6 @@
 {
 	"name": "@cfware/tap-context-got",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "TAP context for performing integration testing with `got`",
 	"type": "module",
 	"main": "index.js",
