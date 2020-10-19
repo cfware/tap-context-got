@@ -1,3 +1,4 @@
+import fs from 'fs/promises';
 import {promisify} from 'util';
 
 import Multipart from 'multi-part';
@@ -26,6 +27,24 @@ export class TAPContextGot {
 
 	constructor(integrationInstance) {
 		this.integrationInstance = integrationInstance;
+
+		for (const instanceID of integrationInstance.instances) {
+			this[instanceID] = integrationInstance[instanceID];
+		}
+
+		this.defaultInstance = integrationInstance.defaultInstance;
+	}
+
+	runPath(...args) {
+		return this.defaultInstance.runPath(...args);
+	}
+
+	async readdir(directory, ...options) {
+		return fs.readdir(this.runPath(directory), ...options);
+	}
+
+	async readFile(filename, ...options) {
+		return fs.readFile(this.runPath(filename), ...options);
 	}
 
 	async getCookieString(url) {
