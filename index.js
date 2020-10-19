@@ -65,12 +65,13 @@ export class TAPContextGot {
 		return JSON.parse(body);
 	}
 
-	async post(api, options) {
+	async _withBody(method, api, options) {
 		const {cache} = options;
 		options = {
 			headers: {},
 			...this.genericGotOptions,
-			...options
+			...options,
+			method
 		};
 
 		if (!cache) {
@@ -96,7 +97,24 @@ export class TAPContextGot {
 			};
 		}
 
-		const {body} = await got.post(`${this.baseURL}${api}`, options);
+		const {body} = await got(`${this.baseURL}${api}`, options);
+
+		return JSON.parse(body);
+	}
+
+	post(api, options) {
+		return this._withBody('POST', api, options);
+	}
+
+	put(api, options) {
+		return this._withBody('PUT', api, options);
+	}
+
+	async delete(api, options) {
+		const {body} = await this.api(api, {
+			...options,
+			method: 'DELETE'
+		});
 
 		return JSON.parse(body);
 	}
@@ -104,18 +122,30 @@ export class TAPContextGot {
 	static setup(tap, integrationInstance) {
 		const {Test} = tap;
 
+		Test.addAssert('apiRejects', 3, async function (api, options, error, message, extra) {
+			options = options || {};
+			await this.rejects(
+				this.context.json(api, options),
+				this.context.httpError[error],
+				message || `${options.method ?? 'GET'} ${api}`,
+				extra
+			);
+		});
+
 		Test.addAssert('checkGet', 2, async function (api, expected, message, extra) {
+			message = message || `GET ${api}`;
 			try {
-				this.strictSame(await this.context.json(api), expected, message || api, extra);
+				this.strictSame(await this.context.json(api), expected, message, extra);
 			} catch (error) {
-				this.error(error, message || api, extra);
+				this.error(error, message, extra);
 			}
 		});
 		Test.addAssert('matchGet', 2, async function (api, expected, message, extra) {
+			message = message || `GET ${api}`;
 			try {
-				this.match(await this.context.json(api), expected, message || api, extra);
+				this.match(await this.context.json(api), expected, message, extra);
 			} catch (error) {
-				this.error(error, message || api, extra);
+				this.error(error, message, extra);
 			}
 		});
 		Test.addAssert('checkGetError', 2, async function (api, error, message, extra) {
@@ -128,10 +158,11 @@ export class TAPContextGot {
 		});
 
 		Test.addAssert('checkPost', 3, async function (api, body, expected, message, extra) {
+			message = message || `POST ${api}`;
 			try {
-				this.strictSame(await this.context.post(api, {body}), expected, message || api, extra);
+				this.strictSame(await this.context.post(api, {body}), expected, message, extra);
 			} catch (error) {
-				this.error(error, message || api, extra);
+				this.error(error, message, extra);
 			}
 		});
 		Test.addAssert('checkPostError', 3, async function (api, body, error, message, extra) {
@@ -139,6 +170,40 @@ export class TAPContextGot {
 				this.context.post(api, {body}),
 				this.context.httpError[error],
 				message || `POST ${api}`,
+				extra
+			);
+		});
+
+		Test.addAssert('checkPut', 3, async function (api, body, expected, message, extra) {
+			message = message || `PUT ${api}`;
+			try {
+				this.strictSame(await this.context.put(api, {body}), expected, message, extra);
+			} catch (error) {
+				this.error(error, message, extra);
+			}
+		});
+		Test.addAssert('checkPutError', 3, async function (api, body, error, message, extra) {
+			await this.rejects(
+				this.context.put(api, {body}),
+				this.context.httpError[error],
+				message || `PUT ${api}`,
+				extra
+			);
+		});
+
+		Test.addAssert('checkDelete', 2, async function (api, expected, message, extra) {
+			message = message || `DELETE ${api}`;
+			try {
+				this.strictSame(await this.context.delete(api), expected, message, extra);
+			} catch (error) {
+				this.error(error, message, extra);
+			}
+		});
+		Test.addAssert('checkDeleteError', 2, async function (api, error, message, extra) {
+			await this.rejects(
+				this.context.delete(api),
+				this.context.httpError[error],
+				message || `DELETE ${api}`,
 				extra
 			);
 		});
